@@ -1,0 +1,98 @@
+PRE-REGISTRATION
+Survival of Mean-Field Optimal-Control Structures on Stochastic Contact Networks:
+A Falsification-Framework Phase-Diagram Study
+
+Author: Morched Derbali
+Date of registration: <SET AT TAG TIME -- must equal the actual git-tag / OSF time>
+Registration ref:      git tag `preregistration-v1` (immutable commit timestamp)
+                       OR OSF registration DOI.  Do NOT hand-enter a commit hash
+                       here; the tag / OSF record itself is the timestamp. Tag or
+                       register first, then run the sweep.
+
+--------------------------------------------------------------------------------
+1. HYPOTHESIS AND OBJECTIVE
+We test whether the non-monotone optimal-control structures proven optimal in
+mean-field epidemic models -- burn-to-herd-immunity (P), delayed onset (T), and
+counter-prevalence / bridge targeting (X) -- survive on stochastic, finite,
+value-heterogeneous contact networks under a sequential cost-aware objective. A
+structure "survives" in a parameter regime if a policy embodying it both (a)
+exhibits the structure and (b) significantly outperforms a best-tuned reactive
+prevalence-following ("naive") policy on the true undiscounted objective
+  J = alpha_r * (value-weighted ever-infected) + total intervention cost,
+AND (c) that advantage is driven by value heterogeneity (it vanishes when
+heterogeneity is switched off). The evaluation is library-based and uses NO
+reinforcement learning in the production verdict.
+
+2. DESIGN
+A six-axis grid is evaluated: cost ratio rho, network mixing mu = p_out/p_in,
+value heterogeneity eta, action-cost asymmetry kappa = cost(shield-B)/
+cost(suppress-A), topology family (SBM, two-clique-plus-bridge, articulation),
+and network seed. Full grid: rho{0.5,1,2,5,10,20,50} x mu{0.05,0.1,0.2,0.3,0.4,
+0.5} x eta{1,2,5,8,16} x kappa{0.25,0.5,1.0} x topo{sbm,bridge,artic} x
+seed{0..7} = 15,120 cells. For every cell a matched eta=1 twin (same rho, mu,
+kappa, topology, seed; heterogeneity off) is constructed for the differential
+gate.
+
+3. SIGNIFICANCE MARGIN AND STATISTICAL TEST  (pre-specified, not post-hoc)
+Effect measure: relative improvement delta = mean_s(J_lib,s - J_naive,s) /
+mean_s(J_naive,s), computed on a held-out TEST seed split, common-random-number
+(CRN) paired with the naive (60 tuning episodes, 60 disjoint test episodes).
+Margin: a meaningful advantage requires delta < -0.10 (at least a 10% reduction
+in J). This relative threshold is chosen because J spans a 33x range across cells
+(pilot: 14 to 458), making any absolute margin scale-dependent; and because the
+measured CRN per-cell 95% interval half-width is ~18% of J at 60 seeds, so a 10%
+margin with interval exclusion is the smallest round threshold reliably testable
+at this sample size.
+Primary test: one-sided bootstrap percentile interval on delta (10,000 resamples
+over paired per-seed differences); requirement: upper 95% bound on delta < -0.10.
+Bootstrap is used rather than a normal-SE interval because J is right-skewed.
+Confirmatory test: one-sided Wilcoxon signed-rank on the raw paired per-seed
+differences (alpha = 0.05), with the requirement that the MEDIAN paired
+improvement also exceeds 10% of median naive J. A cell passes only if BOTH tests
+pass.
+
+4. REGION OF INTEREST (the "plausible box")
+The survival claim is restricted to the confined-cohort realistic region:
+  rho in {1,2,5,10,20}, mu in {0.1,0.2,0.3,0.4}, eta in {2,5,8},
+  kappa in {0.25,0.5,1.0}, topology in {sbm, bridge}, seed in {0..7}
+  = 2,880 cells (360 seed-aggregated configurations).
+Cells outside this box (rho in {0.5,50}, mu in {0.05,0.5}, eta in {1,16},
+topology = artic) are EXPLORATORY tails: reported descriptively with raw effect
+sizes but excluded from the survival claim and from multiple-comparison control.
+eta = 1 cells are the negative control and can never constitute an inversion.
+
+5. MULTIPLE-COMPARISON / FDR CONTROL
+Within the plausible box, the eight network seeds of each (rho,mu,eta,kappa,topo)
+configuration are pooled into ONE hypothesis (paired bootstrap + Wilcoxon over the
+8 seeds), giving 360 configuration-level hypotheses. Benjamini-Hochberg is applied
+to the 360 primary (bootstrap) p-values at q = 0.05. A configuration is declared a
+surviving inversion iff: (i) BH-significant at q = 0.05; (ii) the Wilcoxon
+confirmatory agrees at alpha = 0.05 AND the median paired improvement exceeds 10%
+of the median naive J (the Section 3 median-margin clause); (iii) the differential
+eta-gate holds -- the credited library policy's per-seed advantage is
+heterogeneity-driven (significant at the cell's eta but NOT against the matched
+eta=1 twin) in at least half of the configuration's 8 network seeds; and (iv) the
+convergence invariant J_lib <= 1.05 * J_naive holds for >= 6 of 8 seeds.
+
+6. FALSIFICATION CRITERION (declared in advance)
+PRIMARY OUTCOME -- NULL: if zero configurations in the plausible box satisfy the
+survival criterion (Section 5), we conclude that mean-field optimal-control
+structures do NOT survive on small value-heterogeneous stochastic contact
+networks, and that a simple tuned prevalence-following policy is not beaten by any
+of the tested non-monotone structures within the realistic regime.
+PRIMARY OUTCOME -- SURVIVAL: if one or more configurations satisfy the criterion,
+we report the survival region (which structures, at which rho, mu, eta, kappa,
+topology) as the result, and characterize its boundary.
+The methodology contribution (objective fidelity, representational adequacy,
+safe-gated naive floor, held-out CRN split, differential heterogeneity gate, and
+the demonstration that naive evaluation reports inversions the framework rejects)
+stands regardless of which primary outcome obtains.
+
+7. WHAT IS FIXED BEFORE THE RUN
+The simulator (invsim.py), the inverted-policy library (5 policies: protect_only,
+protect_until_threat, burn_then_protect, delay8, delay15), the naive tuning grid,
+the seed splits, the 10% margin, the bootstrap+Wilcoxon tests, the plausible box,
+the BH/q=0.05 procedure, and the four-part survival criterion are all fixed as of
+this registration. Detection thresholds may be RELAXED post-hoc only as clearly
+labeled sensitivity analyses computed from the stored raw per-episode arrays;
+the pre-registered 10% / BH criterion remains the confirmatory result.
