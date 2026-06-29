@@ -1,0 +1,7 @@
+15120 cells -> summary.csv
+360 plausible-box configurations -> configs.csv
+  phase panels saved
+eta=1 control CLEAN: 0 false inversions (gate vanishes when heterogeneity is off, as required).
+======================================================================
+PRIMARY OUTCOME = NULL: no mean-field inversion survives in the plausible box under the pre-registered criterion.
+======================================================================
